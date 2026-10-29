@@ -49,3 +49,46 @@ Takes effect on the next run. Changing entry/sl re-arms that position's alert.
 
 ## Actions minutes
 Public repo: standard GitHub-hosted runners are free. (Private on the Free plan would exhaust 2,000 min in days.)
+
+## Fill watch (成交检测, read-only)
+
+`fill_watch.py` + `.github/workflows/fill-watch.yml` wake Hermes when one of our 5 swaps
+(SKUU/SNDK/TSLA/NVDA/ORCL-USDT-SWAP) gets a fill. It only calls read-only
+`GET /api/v5/trade/fills` (and `/fills-history` after an outage of more than ~3 days), queried
+per instId, so Elian's manual positions (AAPL, KO, ...) are never fetched or alerted.
+It stops alerting after 2026-11-22 23:59:59 UTC+8. Without the OKX keys a run prints
+`未配置只读 key，跳过` and exits green.
+
+- Payload: `source:"fill-watch"`, instId, side, posSide, subType, execType, fillPx, fillSz,
+  ordId, clOrdId, tradeId, ts (ISO, UTC+8). No balances.
+- Logs: `检查完成，新成交 N 条，已发送 N 条` and `webhook HTTP <code>` only.
+- `state/fill-state.json` (public): `seen` = 16-hex HMAC-SHA256 of `instId|tradeId|billId`,
+  keyed by the secret salt, so public trade IDs cannot be matched to it. `mark_hour_ms` is a
+  whole hour, and `kid` is a key fingerprint. No prices, sizes, sides or IDs.
+- First run (no state) seeds the current fills without alerting. A failed POST is not marked
+  seen and is retried next run.
+- The Shanghai server dispatches it every 2 min (`server/paste-fill.txt`, which reuses
+  `/etc/okx-dispatch/token`). A `*/30` cron is the fallback.
+
+### Elian's setup
+
+1. **OKX read-only key:** OKX → profile → API → Create API key (V5) with permission
+   **Read** only (leave Trade and Withdraw unticked). Leave the IP field
+   empty because GitHub runner IPs change. Set a passphrase and save the API key, secret key and
+   passphrase.
+2. **GitHub secrets:** github.com/boostemotion/okx-price-watch → Settings → Secrets and
+   variables → Actions → New repository secret. Add the three secrets `OKX_RO_API_KEY`,
+   `OKX_RO_SECRET_KEY` and `OKX_RO_PASSPHRASE` (optional fourth: `FILL_STATE_SALT`, any long
+   random string that never changes).
+3. **Server timer:** paste the whole of `server/paste-fill.txt` into the Shanghai server's root
+   shell once. It adds `okx-fill-dispatch.timer` (every 2 min, auto-off 2026-11-23 00:00 UTC+8).
+
+Notes:
+- `/trade/fills` only covers 3 days; older gaps use `/fills-history`, which covers 3 months at
+  10 req/2s.
+- The `ts` field is when the record was created; the alert time comes from `fillTime`.
+- Liquidation/ADL fills have negative tradeIds and are still alerted.
+- OKX makes keys with no IP binding expire after 14 idle days only if they have Trade/Withdraw
+  permission, so a read-only key does not expire (it is also used every 2 min).
+- Changing the salt key (the API key when `FILL_STATE_SALT` is unset) re-seeds once, with no
+  alerts for that run.

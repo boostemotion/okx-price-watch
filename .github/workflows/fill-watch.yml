@@ -1,0 +1,60 @@
+name: okx-fill-watch
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: "Send ONE [TEST] fill webhook to Hermes (not a real fill); checks OKX auth if keys exist"
+        type: boolean
+        default: false
+  schedule:
+    - cron: "*/30 * * * *"   # sparse best-effort fallback; the Shanghai server dispatches every 2 min
+
+permissions:
+  contents: write   # commit state/fill-state.json back (dedupe)
+
+concurrency:
+  group: fill-watch
+  cancel-in-progress: false
+
+jobs:
+  fills:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run one check
+        env:
+          OKX_RO_API_KEY: ${{ secrets.OKX_RO_API_KEY }}
+          OKX_RO_SECRET_KEY: ${{ secrets.OKX_RO_SECRET_KEY }}
+          OKX_RO_PASSPHRASE: ${{ secrets.OKX_RO_PASSPHRASE }}
+          FILL_STATE_SALT: ${{ secrets.FILL_STATE_SALT }}
+          HERMES_WEBHOOK_URL: ${{ secrets.HERMES_WEBHOOK_URL }}
+          HERMES_WEBHOOK_KEY: ${{ secrets.HERMES_WEBHOOK_KEY }}
+          HERMES_WEBHOOK_KEY_HEADERS: ${{ vars.HERMES_WEBHOOK_KEY_HEADERS }}
+          TEST_MODE: ${{ inputs.test_mode }}
+        run: |
+          if [ "$TEST_MODE" = "true" ]; then
+            python fill_watch.py --test
+          else
+            python fill_watch.py
+          fi
+
+      - name: Commit dedupe state
+        if: always() && inputs.test_mode != true
+        run: |
+          [ -n "$(git status --porcelain -- state/fill-state.json)" ] || { echo "state unchanged"; exit 0; }
+          git config user.name "okx-fill-watch[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state/fill-state.json
+          git commit -q -m "state: fill dedupe [skip ci]"
+          for i in 1 2 3; do
+            git pull -q --rebase origin main && git push -q origin HEAD:main && exit 0
+            sleep $((i * 3))
+          done
+          echo "::error::could not push state"; exit 1
