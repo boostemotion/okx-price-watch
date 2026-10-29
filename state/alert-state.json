@@ -1,4 +1,9 @@
 {
- "moves": {},
+ "moves": {
+  "ORCL-USDT-SWAP|down": {
+   "price": 140.42,
+   "t": 1793284212
+  }
+ },
  "positions": {}
 }
