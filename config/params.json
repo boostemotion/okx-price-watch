@@ -1,0 +1,21 @@
+{
+  "_comment": "Alert rules ported 1:1 from /workspace/okx/bin/price_watch.py (Pax thresholds). Edit via commit.",
+  "end_bjt": "2026-11-22T23:59:59+08:00",
+  "instruments": {
+    "SKUU": "SKUU-USDT-SWAP",
+    "SNDK": "SNDK-USDT-SWAP",
+    "TSLA": "TSLA-USDT-SWAP",
+    "NVDA": "NVDA-USDT-SWAP",
+    "ORCL": "ORCL-USDT-SWAP"
+  },
+  "thresh_pct": {
+    "SKUU": [4.5, 7.0],
+    "SNDK": [4.0, 6.0],
+    "TSLA": [3.5, 5.0],
+    "NVDA": [3.0, 4.5],
+    "ORCL": [2.5, 3.5]
+  },
+  "cooldown_min": {"us": 60, "off": 120},
+  "further_pct": {"SKUU": 3.0},
+  "further_pct_default": 2.0
+}

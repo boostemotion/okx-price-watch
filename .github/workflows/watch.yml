@@ -1,0 +1,57 @@
+name: okx-price-watch
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: "Send ONE [TEST] webhook to Hermes (not a real alert) and print prices"
+        type: boolean
+        default: false
+  schedule:
+    - cron: "*/5 * * * *"   # best-effort fallback; the Shanghai server dispatches every 5 min
+
+permissions:
+  contents: write   # commit state/alert-state.json back (dedupe)
+
+concurrency:
+  group: okx-price-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run one cycle
+        env:
+          HERMES_WEBHOOK_URL: ${{ secrets.HERMES_WEBHOOK_URL }}
+          HERMES_WEBHOOK_KEY: ${{ secrets.HERMES_WEBHOOK_KEY }}
+          HERMES_WEBHOOK_KEY_HEADERS: ${{ vars.HERMES_WEBHOOK_KEY_HEADERS }}
+          POSITIONS_JSON: ${{ secrets.POSITIONS_JSON }}
+          TEST_MODE: ${{ inputs.test_mode }}
+        run: |
+          if [ "$TEST_MODE" = "true" ]; then
+            python watch.py --test
+          else
+            python watch.py
+          fi
+
+      - name: Commit dedupe state
+        if: always() && inputs.test_mode != true
+        run: |
+          git diff --quiet -- state/alert-state.json && { echo "state unchanged"; exit 0; }
+          git config user.name "okx-price-watch[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state/alert-state.json
+          git commit -q -m "state: alert dedupe [skip ci]"
+          for i in 1 2 3; do
+            git pull -q --rebase origin main && git push -q origin HEAD:main && exit 0
+            sleep $((i * 3))
+          done
+          echo "::error::could not push state"; exit 1

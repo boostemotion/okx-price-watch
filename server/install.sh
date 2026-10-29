@@ -1,0 +1,57 @@
+#!/bin/bash
+# One-shot installer (Debian, root): every 5 min, trigger the okx-price-watch GitHub Actions workflow.
+# Idempotent: safe to re-run. Paste the token below (fine-grained, this repo only, Actions: Read and write).
+set -euo pipefail
+GH_TOKEN_VALUE="PASTE_TOKEN_HERE"          # leave as-is on re-runs to keep the existing token
+REPO="boostemotion/okx-price-watch"
+WORKFLOW="watch.yml"
+REF="main"
+
+command -v curl >/dev/null || { apt-get update -qq && apt-get install -y -qq curl; }
+install -d -m 700 /etc/okx-dispatch
+if [ "$GH_TOKEN_VALUE" != "PASTE_TOKEN_HERE" ]; then
+  umask 077; printf '%s' "$GH_TOKEN_VALUE" > /etc/okx-dispatch/token
+fi
+[ -s /etc/okx-dispatch/token ] || { echo "ERROR: set GH_TOKEN_VALUE at the top first"; exit 1; }
+chmod 600 /etc/okx-dispatch/token; chown root:root /etc/okx-dispatch/token
+
+cat > /usr/local/bin/okx-dispatch <<SCRIPT
+#!/bin/bash
+# Past 2026-11-23 00:00 UTC+8 the watch window is over: turn this timer off.
+if [ "\$(date +%s)" -ge 1795363200 ]; then echo "window over; disabling timer"; systemctl disable --now okx-dispatch.timer; exit 0; fi
+# POST workflow_dispatch; GitHub answers 204 on success. Output goes to the journal.
+code=\$(curl -sS -o /tmp/okx-dispatch.out -w '%{http_code}' -m 20 -X POST \\
+  -H "Authorization: Bearer \$(cat /etc/okx-dispatch/token)" \\
+  -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" \\
+  https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW/dispatches \\
+  -d '{"ref":"$REF"}') || code=000
+if [ "\$code" = 204 ]; then echo "dispatch ok"; else echo "dispatch FAILED http=\$code \$(head -c 300 /tmp/okx-dispatch.out 2>/dev/null)"; exit 1; fi
+SCRIPT
+chmod 755 /usr/local/bin/okx-dispatch
+
+cat > /etc/systemd/system/okx-dispatch.service <<'UNIT'
+[Unit]
+Description=Trigger okx-price-watch GitHub Actions workflow
+Wants=network-online.target
+After=network-online.target
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/okx-dispatch
+UNIT
+
+cat > /etc/systemd/system/okx-dispatch.timer <<'UNIT'
+[Unit]
+Description=okx-price-watch dispatch every 5 min (stops 2026-11-23)
+[Timer]
+OnCalendar=*:0/5
+Persistent=true
+AccuracySec=10s
+[Install]
+WantedBy=timers.target
+UNIT
+
+systemctl daemon-reload
+systemctl enable --now okx-dispatch.timer
+systemctl start okx-dispatch.service || true
+journalctl -u okx-dispatch.service -n 3 --no-pager
+systemctl list-timers okx-dispatch.timer --no-pager
