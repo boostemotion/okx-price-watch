@@ -3,6 +3,10 @@
   "ORCL-USDT-SWAP|down": {
    "price": 125.75,
    "t": 1793626209
+  },
+  "ORCL-USDT-SWAP|up": {
+   "price": 124.83,
+   "t": 1793718913
   }
  },
  "positions": {}
