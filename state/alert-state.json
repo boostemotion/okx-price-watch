@@ -7,6 +7,10 @@
   "ORCL-USDT-SWAP|up": {
    "price": 124.83,
    "t": 1793718913
+  },
+  "SKUU-USDT-SWAP|down": {
+   "price": 16.28,
+   "t": 1793757610
   }
  },
  "positions": {}
