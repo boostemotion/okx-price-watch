@@ -9,12 +9,16 @@
    "t": 1793804411
   },
   "SKUU-USDT-SWAP|down": {
-   "price": 16.28,
-   "t": 1793757610
+   "price": 15.86,
+   "t": 1793808011
   },
   "SKUU-USDT-SWAP|up": {
    "price": 16.99,
    "t": 1793771109
+  },
+  "SNDK-USDT-SWAP|down": {
+   "price": 1033.8,
+   "t": 1793808011
   }
  },
  "positions": {}
