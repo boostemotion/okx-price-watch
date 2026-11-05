@@ -1,5 +1,9 @@
 {
  "moves": {
+  "NVDA-USDT-SWAP|down": {
+   "price": 187.31,
+   "t": 1793891711
+  },
   "ORCL-USDT-SWAP|down": {
    "price": 118.35,
    "t": 1793890812
@@ -9,8 +13,8 @@
    "t": 1793804411
   },
   "SKUU-USDT-SWAP|down": {
-   "price": 15.86,
-   "t": 1793808011
+   "price": 12.38,
+   "t": 1793891711
   },
   "SKUU-USDT-SWAP|up": {
    "price": 16.99,
@@ -25,9 +29,5 @@
    "t": 1793890812
   }
  },
- "positions": {
-  "h:126da1e2e01c0a7c": {
-   "t": 1793890511
-  }
- }
+ "positions": {}
 }
