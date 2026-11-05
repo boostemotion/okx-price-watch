@@ -1,8 +1,8 @@
 {
  "moves": {
   "ORCL-USDT-SWAP|down": {
-   "price": 125.75,
-   "t": 1793626209
+   "price": 118.35,
+   "t": 1793890812
   },
   "ORCL-USDT-SWAP|up": {
    "price": 126.62,
@@ -17,8 +17,12 @@
    "t": 1793771109
   },
   "SNDK-USDT-SWAP|down": {
-   "price": 1033.8,
-   "t": 1793808011
+   "price": 899.5,
+   "t": 1793890812
+  },
+  "TSLA-USDT-SWAP|down": {
+   "price": 348.73,
+   "t": 1793890812
   }
  },
  "positions": {
