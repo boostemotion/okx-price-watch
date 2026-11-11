@@ -1,8 +1,8 @@
 {
  "moves": {
   "NVDA-USDT-SWAP|down": {
-   "price": 183.34,
-   "t": 1793894111
+   "price": 160.63,
+   "t": 1794437109
   },
   "ORCL-USDT-SWAP|down": {
    "price": 114.67,
@@ -37,5 +37,9 @@
    "t": 1794236411
   }
  },
- "positions": {}
+ "positions": {
+  "h:43942ed77e0015db": {
+   "t": 1794437109
+  }
+ }
 }
