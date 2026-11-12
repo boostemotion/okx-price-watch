@@ -85,7 +85,7 @@ class Moves(Base):
 
     def test_after_end_date(self):
         mt = flat(); mt["TSLA-USDT-SWAP"] = m(100.0, 4, 3.6, 3.6)
-        t = dt.datetime(2026, 11, 23, 0, 0, 1, tzinfo=BJT)
+        t = dt.datetime(2026, 11, 27, 0, 0, 1, tzinfo=BJT)
         self.assertEqual(self.go(mt, t=t), 0); self.assertEqual(self.posted, [])
         self.go(mt, t=dt.datetime(2026, 11, 22, 23, 59, tzinfo=BJT))  # still inside window (Sun, off)
         self.assertEqual(self.posted, [])  # off th 5.0 > 3.6; window open but no hit

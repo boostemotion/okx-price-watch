@@ -6,7 +6,7 @@ GitHub Actions port of `/workspace/okx/bin/price_watch.py` (Hermes's read-only O
 counts (`检查完成，读取价格 5/5，命中 N 条，已发送 N 条` and `webhook HTTP 200`); the committed state file stores
 position dedupe as opaque hashes. Never commit positions, entry/stop/size/side, or webhook values.
 Public OKX market data only: no OKX key, never trades. Each run is one cycle; on a hit it POSTs JSON
-to Hermes's webhook. After 2026-11-22 23:59:59 UTC+8 runs exit without alerting.
+to Hermes's webhook. After 2026-11-26 23:59:59 UTC+8 runs exit without alerting.
 
 ## Files
 | path | what |
@@ -44,8 +44,8 @@ Takes effect on the next run. Changing entry/sl re-arms that position's alert.
    **Actions: Read and write** (Metadata: Read-only is added automatically). Nothing else.
 3. Tencent Cloud console → 云服务器 → 执行命令: paste `server/paste.txt` after replacing `PASTE_TOKEN_HERE`.
    Check: `journalctl -u okx-dispatch -n 20`. Remove: `systemctl disable --now okx-dispatch.timer`.
-   The dispatcher turns itself off after 2026-11-23 00:00 UTC+8.
-4. After 2026-11-22, disable the workflow (Actions → okx-price-watch → Disable) to stop the schedule.
+   The dispatcher turns itself off after 2026-11-27 00:00 UTC+8.
+4. After 2026-11-26, disable the workflow (Actions → okx-price-watch → Disable) to stop the schedule.
 
 ## Actions minutes
 Public repo: standard GitHub-hosted runners are free. (Private on the Free plan would exhaust 2,000 min in days.)
@@ -56,7 +56,7 @@ Public repo: standard GitHub-hosted runners are free. (Private on the Free plan 
 (SKUU/SNDK/TSLA/NVDA/ORCL-USDT-SWAP) gets a fill. It only calls read-only
 `GET /api/v5/trade/fills` (and `/fills-history` after an outage of more than ~3 days), queried
 per instId, so Elian's manual positions (AAPL, KO, ...) are never fetched or alerted.
-It stops alerting after 2026-11-22 23:59:59 UTC+8. Without the OKX keys a run prints
+It stops alerting after 2026-11-26 23:59:59 UTC+8. Without the OKX keys a run prints
 `未配置只读 key，跳过` and exits green.
 
 - Payload: `source:"fill-watch"`, instId, side, posSide, subType, execType, fillPx, fillSz,
@@ -81,7 +81,7 @@ It stops alerting after 2026-11-22 23:59:59 UTC+8. Without the OKX keys a run pr
    `OKX_RO_SECRET_KEY` and `OKX_RO_PASSPHRASE` (optional fourth: `FILL_STATE_SALT`, any long
    random string that never changes).
 3. **Server timer:** paste the whole of `server/paste-fill.txt` into the Shanghai server's root
-   shell once. It adds `okx-fill-dispatch.timer` (every 2 min, auto-off 2026-11-23 00:00 UTC+8).
+   shell once. It adds `okx-fill-dispatch.timer` (every 2 min, auto-off 2026-11-27 00:00 UTC+8).
 
 Notes:
 - `/trade/fills` only covers 3 days; older gaps use `/fills-history`, which covers 3 months at

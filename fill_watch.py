@@ -24,7 +24,7 @@ BJT = ZoneInfo("Asia/Shanghai")
 HERE = os.path.dirname(os.path.abspath(__file__))
 STATE = os.path.join(HERE, "state", "fill-state.json")
 INSTS = ("SKUU-USDT-SWAP", "SNDK-USDT-SWAP", "TSLA-USDT-SWAP", "NVDA-USDT-SWAP", "ORCL-USDT-SWAP")
-END = dt.datetime(2026, 11, 22, 23, 59, 59, tzinfo=BJT)
+END = dt.datetime(2026, 11, 26, 23, 59, 59, tzinfo=BJT)
 UA = "Mozilla/5.0"
 HOUR_MS = 3_600_000
 FILLS_WINDOW_MS = 3 * 24 * HOUR_MS          # /trade/fills covers the last 3 days
@@ -189,7 +189,7 @@ def run(mode, now=None, get=okx_get, post=post_alert):
         log("测试 webhook " + ("OK" if ok else "FAILED"))
         return 0 if ok else 1
     if now > END:
-        log("已过 2026-11-22 23:59:59 UTC+8，不再报警")
+        log("已过 2026-11-26 23:59:59 UTC+8，不再报警")
         return 0
     creds = okx_creds()
     if not creds:

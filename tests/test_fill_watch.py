@@ -136,7 +136,7 @@ print('POSTED', len(posted))
 
     def test_end_date(self):
         self.go(T0)
-        late = dt.datetime(2026, 11, 23, 0, 0, 1, tzinfo=BJT)
+        late = dt.datetime(2026, 11, 27, 0, 0, 1, tzinfo=BJT)
         self.okx.fills.append(fill("NVDA-USDT-SWAP", late))
         self.go(late)
         self.assertEqual(self.posted, [])

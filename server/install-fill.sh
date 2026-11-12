@@ -12,8 +12,8 @@ command -v curl >/dev/null || { apt-get update -qq && apt-get install -y -qq cur
 
 cat > /usr/local/bin/okx-fill-dispatch <<SCRIPT
 #!/bin/bash
-# Past 2026-11-23 00:00 UTC+8 the watch window is over: turn this timer off.
-if [ "\$(date +%s)" -ge 1795363200 ]; then echo "window over; disabling timer"; systemctl disable --now okx-fill-dispatch.timer; exit 0; fi
+# Past 2026-11-27 00:00 UTC+8 the watch window is over: turn this timer off.
+if [ "\$(date +%s)" -ge 1795708800 ]; then echo "window over; disabling timer"; systemctl disable --now okx-fill-dispatch.timer; exit 0; fi
 # POST workflow_dispatch; GitHub answers 204 on success. Output goes to the journal.
 code=\$(curl -sS -o /tmp/okx-fill-dispatch.out -w '%{http_code}' -m 20 -X POST \\
   -H "Authorization: Bearer \$(cat /etc/okx-dispatch/token)" \\
@@ -36,7 +36,7 @@ UNIT
 
 cat > /etc/systemd/system/okx-fill-dispatch.timer <<'UNIT'
 [Unit]
-Description=okx-fill-watch dispatch every 2 min (stops 2026-11-23)
+Description=okx-fill-watch dispatch every 2 min (stops 2026-11-27)
 [Timer]
 OnCalendar=*:0/2
 Persistent=true
