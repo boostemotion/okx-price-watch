@@ -1,16 +1,16 @@
 {
  "moves": {
   "NVDA-USDT-SWAP|down": {
-   "price": 151.46,
-   "t": 1794493811
+   "price": 162.42,
+   "t": 1794582012
   },
   "NVDA-USDT-SWAP|up": {
    "price": 162.45,
    "t": 1794496511
   },
   "ORCL-USDT-SWAP|down": {
-   "price": 114.67,
-   "t": 1793895310
+   "price": 123.82,
+   "t": 1794582012
   },
   "ORCL-USDT-SWAP|up": {
    "price": 126.62,
@@ -25,8 +25,8 @@
    "t": 1794412814
   },
   "SNDK-USDT-SWAP|down": {
-   "price": 855.7,
-   "t": 1794327311
+   "price": 879.5,
+   "t": 1794582012
   },
   "SNDK-USDT-SWAP|up": {
    "price": 894.9,
