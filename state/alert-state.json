@@ -25,8 +25,8 @@
    "t": 1794412814
   },
   "SNDK-USDT-SWAP|down": {
-   "price": 879.5,
-   "t": 1794582012
+   "price": 860.7,
+   "t": 1794582910
   },
   "SNDK-USDT-SWAP|up": {
    "price": 894.9,
@@ -41,9 +41,5 @@
    "t": 1794236411
   }
  },
- "positions": {
-  "h:b04e8b40eb465ffe": {
-   "t": 1794582310
-  }
- }
+ "positions": {}
 }
