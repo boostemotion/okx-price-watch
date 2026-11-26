@@ -306,6 +306,10 @@ def run(mode, P=None, t=None, fetch=fetch_metrics, post=post_alert):
         tb = body(P, "SKUU-USDT-SWAP", "up", 0.0, None, "test", session(t), t,
                   test=True, message=TEST_TEXT,
                   prices={k: v["price"] for k, v in metrics.items()})
+        cfg_fp = webhook_cfg()
+        for label, value in (("url", cfg_fp["url"] or ""), ("key", cfg_fp["key"] or "")):
+            print("cfg fp: %s=%d/%s" % (label, len(value),
+                                        hashlib.sha256(value.encode()).hexdigest()[:12]))
         log(f"测试模式：读取价格 {n_ok}/{n_all}")
         ok = post(tb, webhook_cfg())
         log("测试 webhook " + ("OK" if ok else "FAILED"))
