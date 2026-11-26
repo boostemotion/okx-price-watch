@@ -63,8 +63,11 @@ def session(t):
 # ---------- webhook ----------
 def webhook_cfg():
     g = lambda k, d=None: os.environ.get(k) or d
-    return {"url": g("HERMES_WEBHOOK_URL"), "key": g("HERMES_WEBHOOK_KEY"),
-            "headers": g("HERMES_WEBHOOK_KEY_HEADERS", "Authorization,X-Automation-Key")}
+    # .strip() on purpose: secrets pasted through the GitHub UI often carry a trailing newline,
+    # and an HMAC key with one extra byte is a silent 401.
+    return {"url": (g("HERMES_WEBHOOK_URL") or "").strip(),
+            "key": (g("HERMES_WEBHOOK_KEY") or "").strip(),
+            "headers": (g("HERMES_WEBHOOK_KEY_HEADERS", "Authorization,X-Automation-Key") or "").strip()}
 
 
 def post_alert(body, cfg):
