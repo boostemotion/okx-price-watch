@@ -14,7 +14,7 @@ default "Authorization,X-Automation-Key"), POSITIONS_JSON (secret; unset -> half
 skipped), OKX_BASES (optional comma list of API hosts to try in order).
 Stdlib only.
 """
-import argparse, datetime as dt, hashlib, json, os, sys, urllib.parse, urllib.request
+import argparse, datetime as dt, hashlib, hmac, json, os, sys, time, urllib.parse, urllib.request
 from zoneinfo import ZoneInfo
 
 BJT = ZoneInfo("Asia/Shanghai")
@@ -72,11 +72,23 @@ def post_alert(body, cfg):
     if not cfg["url"] or not cfg["key"]:
         log("ERROR webhook 未配置，未发送")
         return False
-    headers = {"Content-Type": "application/json", "User-Agent": UA}
-    for h in [x.strip() for x in cfg["headers"].split(",") if x.strip()]:
-        headers[h] = f"Bearer {cfg['key']}" if h.lower() == "authorization" else cfg["key"]
-    req = urllib.request.Request(cfg["url"], data=json.dumps(body, ensure_ascii=False).encode(),
-                                 headers=headers, method="POST")
+    openbot = cfg["key"].startswith("whsec_") or "signal.openbot.run" in cfg["url"]
+    if openbot:
+        # OpenBot webhook: {"type": str, "data": any}; HMAC key is the whole "whsec_..." string, not decoded
+        raw = json.dumps({"type": "price_alert", "data": body}, ensure_ascii=False).encode()
+        ts = str(int(time.time()))
+        did = os.urandom(12).hex()
+        headers = {"Content-Type": "application/json", "User-Agent": UA,
+                   "x-openbot-timestamp": ts,
+                   "x-openbot-delivery-id": did,
+                   "x-openbot-signature": "sha256=" + hmac.new(
+                       cfg["key"].encode(), f"{ts}.{did}.".encode() + raw, hashlib.sha256).hexdigest()}
+    else:
+        raw = json.dumps(body, ensure_ascii=False).encode()
+        headers = {"Content-Type": "application/json", "User-Agent": UA}
+        for h in [x.strip() for x in cfg["headers"].split(",") if x.strip()]:
+            headers[h] = f"Bearer {cfg['key']}" if h.lower() == "authorization" else cfg["key"]
+    req = urllib.request.Request(cfg["url"], data=raw, headers=headers, method="POST")
     try:
         with urllib.request.urlopen(req, timeout=8) as r:
             code = r.status
